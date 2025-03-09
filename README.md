@@ -141,7 +141,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Author
 **Abdul Wasay Naveed**
-- GitHub: [yourusername](https://github.com/yourusername)
-- LinkedIn: [Your LinkedIn](https://www.linkedin.com/in/yourprofile)
+- GitHub: [yourusername](https://github.com/AbdulWasayNaveed)
+- LinkedIn: [Your LinkedIn](https://www.linkedin.com/in/abdul-wasay-naveed-b2220924b/)
 
 ---
