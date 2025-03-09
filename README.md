@@ -1,85 +1,147 @@
-# 5-Band Graphic Equalizer
+# Design and Implementation of a 5-band Graphic Equalizer
 
-Project Overview
+## Introduction
+This project integrates a MATLAB App Designer GUI with a Simulink Model to create a complete audio equalization system. The MATLAB GUI provides an interactive interface for selecting frequency bands, adjusting gain parameters, and visualizing real-time audio changes. Meanwhile, the Simulink Model processes the audio signal, filtering it through specific frequency bands and allowing for dynamic gain modifications. 
 
-This project implements a 5-Band Graphic Equalizer using MATLAB App Designer and Simulink. The equalizer allows users to adjust the gain of five frequency bands to enhance or suppress specific frequencies in an audio signal. It includes both real-time visualization and filtering capabilities.
+By combining Simulink's precision in signal processing with a user-friendly GUI, this project offers a powerful tool for adjusting audio signals efficiently.
 
-Features
+## Technical Background
 
-5 Frequency Bands: Users can control gain for different frequency ranges.
+### Simulink Model
+- Implements a **multi-filter approach** with five bandpass filters targeting specific frequency bands: **63 Hz, 250 Hz, 1000 Hz, 4000 Hz, and 16000 Hz**.
+- Adjustable gain sliders allow precise control over each frequency component.
+- Real-time visualization of filtered signals and the final equalized output.
 
-Real-Time Processing: Visualize changes in time and frequency domains.
+### GUI (MATLAB App Designer)
+- Provides an intuitive interface for real-time interaction.
+- Includes knobs for selecting frequency bands and sliders for adjusting gain levels.
+- Supports audio file loading and playback for enhanced user experience.
 
-Customizable UI: User-friendly interface designed in MATLAB App Designer.
+### Filter Design
+- Uses **Butterworth bandpass filters** to target specific frequency bands.
+- Filter parameters:
+  - **Order:** Controls roll-off rate and selectivity.
+  - **Quality Factor (Q):** Determines bandwidth and frequency selectivity.
+  - **Center Frequency (FC):** Represents the midpoint of the targeted frequency band.
 
-Simulink Integration: Uses Simulink for real-time audio filtering.
+## Methodology
 
-Powerful Audio Processing: Implements FIR and IIR filters for precise equalization.
+### 1. Filter Design (Simulink Model)
+- Implements a **5-band graphic equalizer** with adjustable gain sliders.
+- Uses Butterworth bandpass filters to process the input audio signal.
 
-Installation and Setup
+```matlab
+% Compute Butterworth filter coefficients
+function [a,b] = butter_coef()
+    Q = 0.85;
+    fc = [63 250 1000 4000 16000];
+    Fs = 58000;
+    for i = 1:5
+        fc1 = -fc(i)/(2*Q) + fc(i)*sqrt(1/(Q^2) + 4)/2;
+        fc2 = fc(i)/Q + fc1;
+        [b{i}, a{i}] = butter(3, [fc1 fc2]/(Fs/2), 'bandpass');
+    end
+end
+```
 
-Requirements
+### 2. Cutoff Frequencies Adjustment
+- The cutoff frequency marks the point where a filter reaches -3 dB, indicating the start of attenuation.
 
-MATLAB (R2021a or later)
+### 3. Individual and Combined Frequency Analysis
+- Each filter isolates a specific frequency band.
+- Filter outputs are combined to generate the final equalized audio signal.
 
-MATLAB App Designer
+## Simulink Implementation
 
-Simulink
+### 1. Loading Audio Files
+- The **LoadFileButton** prompts users to select an audio file (WAV, MP3).
+- The file path is displayed on the GUI.
 
-Signal Processing Toolbox
+### 2. Equalizer Sliders and Filters
+- Gain adjustments from the GUI affect the Butterworth bandpass filters in real time.
 
-Audio Toolbox (recommended for real-time audio processing)
+### 3. Applying Filters Sequentially
+- The **PlayButton** applies filters sequentially, ensuring smooth transitions and optimal audio quality.
 
-Steps to Run the Application
+```matlab
+function PlayButtonPushed(app, event)
+    % Code for applying filters and real-time plotting
+end
+```
 
-Clone or download the repository.
+## GUI - MATLAB App Designer
 
-Open MATLAB and navigate to the project folder.
+### 1. Audio File Processing
+- **LoadFileButtonPushed** allows users to select an audio file using `uigetfile`.
+- Displays the file path in the GUI.
 
-Open the EqualizerApp.mlapp file in MATLAB App Designer.
+```matlab
+function LoadFileButtonPushed(app, event)
+    [file, path] = uigetfile({'*.wav;*.mp3'});
+    app.FilePathLabel.Text = fullfile(path, file);
+end
+```
 
-Run the app and load an audio file.
+### 2. Real-time Equalization
+- **PlayButtonPushed** loads the original audio, applies Butterworth filters, and visualizes the processed signal.
 
-Adjust frequency band sliders to modify the audio signal in real-time.
+### 3. Stop Functionality
+- **StopButtonPushed** stops the playback using the `stop` function.
 
-Observe the changes in the waveform and spectrum plots.
+```matlab
+function StopButtonPushed(app, event)
+    stop(app.audioPlayer);
+    app.StopButton.Text = 'Stopped';
+end
+```
 
-File Structure
+### 4. Gain Control via Knobs
+- Knobs update labels to display current gain values.
 
-EqualizerApp.mlapp – Main MATLAB App Designer file.
+```matlab
+function knob1ValueChanged(app, event)
+    value = app.knob1.Value;
+    app.knob1label.Text = int2str(value);
+end
+```
 
-equalizer_simulink.slx – Simulink model for real-time filtering.
+### 5. Applying Filters
+- Filters are dynamically applied based on user-selected gain values.
 
-filters.m – MATLAB script defining FIR/IIR filter parameters.
+```matlab
+function data_out = equalizerSlider_63Hz(app, data_in)
+    gain = app.knob1.Value;
+    orders = 3;
+    data_out = app.filterData_1(data_in, orders, gain);
+end
+```
 
-README.md – Documentation for the project.
+## Features
+- **5-band equalization:** Adjust gain levels for specific frequency bands.
+- **Real-time visualization:** View filtered signal changes instantly.
+- **User-friendly GUI:** Simple controls for audio selection, playback, and filtering.
+- **Efficient filtering:** Butterworth filters ensure smooth transitions and minimal distortion.
 
-How It Works
+## Installation and Usage
+1. Clone this repository:
+   ```sh
+   git clone https://github.com/yourusername/5-band-equalizer.git
+   ```
+2. Open MATLAB and navigate to the project directory.
+3. Run `appdesigner` and open the GUI file.
+4. Load an audio file, adjust equalizer settings, and play the filtered audio.
 
-Load Audio: The user loads an audio file via the UI.
+## Future Improvements
+- Implement additional filter designs (Chebyshev, Elliptic) for comparison.
+- Optimize real-time processing for larger audio files.
+- Add an option to export equalized audio.
 
-Filter Application: The selected gains are applied to predefined FIR/IIR filters.
+## License
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-Visualization: The app displays the time-domain waveform and frequency spectrum.
+## Author
+**Abdul Wasay Naveed**
+- GitHub: [yourusername](https://github.com/yourusername)
+- LinkedIn: [Your LinkedIn](https://www.linkedin.com/in/yourprofile)
 
-Real-Time Adjustment: Users can dynamically adjust gain for each band and hear immediate changes.
-
-Future Enhancements
-
-Implement additional filter types (e.g., parametric equalization).
-
-Improve real-time performance with optimized DSP techniques.
-
-Add support for live audio input.
-
-Contributors
-
-Abdul Wasay Naveeed
-
-License
-
-This project is licensed under the MIT License. Feel free to modify and distribute it.
-
-Contact
-
-For any questions or suggestions, feel free to reach out via GitHub or email.
+---
